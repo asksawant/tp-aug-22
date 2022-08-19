@@ -6,11 +6,18 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import OneHotEncoder
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+import joblib
+
+# from.import model_dispatcher
 
 # TRAINING_DATA = os.environ.get("TRAINING_DATA")
 # FOLD = os.environ.get("FOLD")
+# MODEL = os.environ.get("MODEL")
 
-TRAINING_DATA = input/train_fold.csv
+TRAINING_DATA = "input/train_fold.csv"
+TEST_DATA = "input/test.csv"
 FOLD = 0
 
 FOLD_MAPPING = {
@@ -24,8 +31,9 @@ FOLD_MAPPING = {
 if __name__ == "__main__":
 
     df = pd.read_csv(TRAINING_DATA)
+    df_test = pd.read_csv(TEST_DATA)
     train_df = df[df.kfold.isin(FOLD_MAPPING.get(FOLD))]
-    valid_df = df[df.kold == FOLD]
+    valid_df = df[df.kfold == FOLD]
 
     y_train = train_df.failure.values
     y_valid = valid_df.failure.values
@@ -45,6 +53,7 @@ if __name__ == "__main__":
     my_cols = numerical_cols + categorical_cols
     X_train = train_df[my_cols].copy()
     X_valid = valid_df[my_cols].copy()
+    X_test = df_test[my_cols].copy()
 
     # Preprocessing for numerical data
     numerical_transformer = SimpleImputer(strategy='mean')
@@ -64,6 +73,7 @@ if __name__ == "__main__":
     # data is ready to train
     # Defining the model
     model = DecisionTreeClassifier(random_state=0)
+    # model = model_dispatcher.MODEL(MODEL)
 
     # Bundle preprocessing and modeling code in a pipeline
     clf = Pipeline(steps=[('preprocessor', preprocessor),('model', model)])
@@ -74,8 +84,6 @@ if __name__ == "__main__":
     # Preprocessing of validation data, get predictions
     preds = clf.predict_proba(X_valid)[:,1]
     print(preds)
-
-
-
-
+    print(metrics.roc_auc_score(y_valid,preds))
+    
 
